@@ -82,7 +82,8 @@ fi
 : "${SLACK_CHANNEL_ID:?SLACK_CHANNEL_ID が未設定です（リポジトリ Variables に登録してください）}"
 
 # 色バーを付けるため attachments を使う。
-# 通知バナーやスレッド一覧には最上位の text が出るので、そこには要約を入れる。
+# 最上位に text を置くと本文が二重に表示されるので置かない。
+# 通知バナーに出る文言は attachment の fallback で指定する。
 payload="$(jq -n \
   --arg channel  "$SLACK_CHANNEL_ID" \
   --arg summary  "$SUMMARY" \
@@ -92,7 +93,6 @@ payload="$(jq -n \
   --arg icon     "$SLACK_ICON_EMOJI" \
   '{
      channel: $channel,
-     text: $summary,
      username: $username,
      icon_emoji: $icon,
      attachments: [
