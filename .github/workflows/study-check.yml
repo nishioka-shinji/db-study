@@ -26,5 +26,8 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+          # 未設定ならスクリプト側の既定値（DB 講師 / :books:）が使われる
+          SLACK_USERNAME: ${{ vars.SLACK_USERNAME }}
+          SLACK_ICON_EMOJI: ${{ vars.SLACK_ICON_EMOJI }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: ./scripts/notify_study_status.sh

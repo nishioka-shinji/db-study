@@ -8,6 +8,8 @@
 # 任意:
 #   DRY_RUN=true      Slack に投げず、メッセージを標準出力に出すだけ
 #   STUDY_LOG_FILE    最終学習日時ファイルのパス (既定: study-log/last_study_at.txt)
+#   SLACK_USERNAME    投稿時の表示名 (既定: DB 講師) ※ chat:write.customize が必要
+#   SLACK_ICON_EMOJI  投稿時のアイコン (既定: :books:) ※ 同上
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -16,6 +18,9 @@ source scripts/study_date_lib.sh
 
 LOG_FILE="${STUDY_LOG_FILE:-study-log/last_study_at.txt}"
 DRY_RUN="${DRY_RUN:-false}"
+# 空文字で渡ってきた場合も既定値にフォールバックさせる
+SLACK_USERNAME="${SLACK_USERNAME:-DB 講師}"
+SLACK_ICON_EMOJI="${SLACK_ICON_EMOJI:-:books:}"
 
 TODAY="$(TZ=Asia/Tokyo date +%F)"
 YESTERDAY="$(shift_days "$TODAY" -1)"
@@ -63,8 +68,12 @@ fi
 : "${SLACK_BOT_TOKEN:?SLACK_BOT_TOKEN が未設定です（リポジトリ Secrets に登録してください）}"
 : "${SLACK_CHANNEL_ID:?SLACK_CHANNEL_ID が未設定です（リポジトリ Variables に登録してください）}"
 
-payload="$(jq -n --arg channel "$SLACK_CHANNEL_ID" --arg text "$MESSAGE" \
-  '{channel: $channel, text: $text}')"
+payload="$(jq -n \
+  --arg channel  "$SLACK_CHANNEL_ID" \
+  --arg text     "$MESSAGE" \
+  --arg username "$SLACK_USERNAME" \
+  --arg icon     "$SLACK_ICON_EMOJI" \
+  '{channel: $channel, text: $text, username: $username, icon_emoji: $icon}')"
 
 response="$(curl -sS -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" \
@@ -76,4 +85,4 @@ if [[ "$(jq -r '.ok' <<<"$response")" != "true" ]]; then
   exit 1
 fi
 
-echo "Slack に通知しました (channel: ${SLACK_CHANNEL_ID})"
+echo "Slack に通知しました (channel: ${SLACK_CHANNEL_ID} / name: ${SLACK_USERNAME})"

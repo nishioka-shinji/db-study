@@ -29,9 +29,12 @@ Claude Code で「学習を始めましょう」と伝える。
 |---|---|---|
 | Secret | `SLACK_BOT_TOKEN` | Slack App の Bot Token (`xoxb-...`)。スコープ `chat:write` が必要 |
 | Variable | `SLACK_CHANNEL_ID` | 投稿先 `#db-study` のチャンネル ID (`C...`)。Bot を招待しておく |
+| Variable | `SLACK_USERNAME` | (任意) 投稿時の表示名。未設定なら `DB 講師` |
+| Variable | `SLACK_ICON_EMOJI` | (任意) 投稿時のアイコン。未設定なら `:books:` |
 
 設定場所は Settings → Secrets and variables → Actions。
 チャンネル ID は Slack でチャンネル名をクリック → 一番下に表示される `C...` をコピーする。
+表示名とアイコンの上書きには Slack App 側で `chat:write.customize` スコープが必要。
 手動実行は Actions タブの study-check → Run workflow（`dry_run` を on にすると Slack に投げずログ出力のみ）。
 
 ローカル確認:
