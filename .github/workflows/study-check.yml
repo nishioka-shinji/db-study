@@ -1,0 +1,30 @@
+name: study-check
+
+# 毎日 10:00 JST に「前日に学習したか」を Slack へ通知する。
+# GitHub Actions の cron は UTC 指定なので 01:00 UTC = 10:00 JST。
+# （GitHub 側の負荷により数分〜数十分遅れて起動することがある）
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Slack に投稿せずメッセージだけ出力する'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 学習状況を Slack に通知
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: ./scripts/notify_study_status.sh

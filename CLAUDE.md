@@ -41,6 +41,9 @@ SQL は書けるし実務で DB に触れている。目標は「DB スペシャ
 - `lessons/NN-<slug>/queries.sql` — その章で実行した SQL
 - `PROGRESS.md` — 進捗表の該当行を更新
 - 生徒が詰まった点・誤解した点は必ず「つまずき」欄に残す
+- `./scripts/record_study.sh` を実行して `study-log/last_study_at.txt`（最終学習日時）を更新する
+  （毎日 10:00 JST の GitHub Actions がこのファイルを見て、前日 10:00〜当日 09:59 に
+  学習記録があるかを Slack に通知する）
 
 ## 環境
 ```bash
