@@ -11,6 +11,11 @@
   一方 UNIQUE 制約自体はトランザクションの有無と無関係に機能する(誤解しやすい点)。
 - 本編でほぼ常に InnoDB を前提にするのは、ロールバックによる整合性保証と外部キー制約が
   実務上ほぼ必須だから。
+- `SHOW ENGINES;` は `INFORMATION_SCHEMA.ENGINES` を見ており、ディスク上のデータではなく
+  「サーバにロードされているストレージエンジンのプラグイン一覧」を返す。
+- CSV エンジンはテーブルの実体がそのまま `.CSV` ファイル(NOT NULL 列のみ許可)。
+  ただし行数などのメタデータは別ファイル `.CSM` で管理しており、MySQL を経由せず
+  `.CSV` を直接書き換えても `SELECT` には反映されない。`REPAIR TABLE` で同期される。
 
 ## 手を動かしたこと
 ```sql
@@ -32,6 +37,15 @@ SELECT * FROM t_myisam;   -- 1件残る (ロールバックされない)
 SHOW WARNINGS;            -- Some non-transactional changed tables couldn't be rolled back
 
 DROP TABLE t_innodb, t_myisam;
+
+-- CSV エンジンの実験
+CREATE TABLE t_csv (id INT NOT NULL, name VARCHAR(10) NOT NULL) ENGINE=CSV;
+INSERT INTO t_csv VALUES (1, 'alice'), (2, 'bob');
+SELECT * FROM t_csv;
+-- コンテナ内で直接 .CSV に1行 追記 (3,"carol") しても SELECT には反映されない
+REPAIR TABLE t_csv;   -- .CSM (メタデータ) を同期
+SELECT * FROM t_csv;  -- ここで carol が見える
+DROP TABLE t_csv;
 ```
 
 ## 図
@@ -55,6 +69,9 @@ flowchart TB
 - 「トランザクションがないと UNIQUE 制約(一意性)が保証できない」と誤解した。
   実際は UNIQUE/PRIMARY KEY はトランザクションと無関係に機能する。
   MyISAM が実務で困る本当の理由は「ロールバック不可」と「外部キー制約が使えない」の2点。
+- CSV エンジンで `SELECT` の中身を「ファイルを直接見てるだけ」と早合点した。
+  正しくは `.CSV`(データ)と `.CSM`(メタデータ)の2ファイル構成で、外部からの直接編集は
+  メタデータとズレるため反映されない。
 
 ## 覚えておくコマンド・構文
 - `SHOW ENGINES;` — 利用可能なストレージエンジンと特性(Transactions/XA/Savepoints)を確認

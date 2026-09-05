@@ -18,3 +18,12 @@ SELECT * FROM t_myisam;
 SHOW WARNINGS;
 
 DROP TABLE t_innodb, t_myisam;
+
+-- CSV エンジンの実験
+CREATE TABLE t_csv (id INT NOT NULL, name VARCHAR(10) NOT NULL) ENGINE=CSV;
+INSERT INTO t_csv VALUES (1, 'alice'), (2, 'bob');
+SELECT * FROM t_csv;
+-- (コンテナ内で .CSV ファイルに直接1行追記 -> 反映されないことを確認)
+REPAIR TABLE t_csv;
+SELECT * FROM t_csv;
+DROP TABLE t_csv;
