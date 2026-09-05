@@ -64,6 +64,9 @@ sonnet で足りる一方、内部構造の説明は推測混じりの断言が�
 - `./scripts/record_study.sh` を実行して `study-log/last_study_at.txt`（最終学習日時）を更新する
   （毎日 10:00 JST の GitHub Actions がこのファイルを見て、前日 10:00〜当日 09:59 に
   学習記録があるかを Slack に通知する）
+- 上記の記録一式（README.md / queries.sql / PROGRESS.md / last_study_at.txt）を
+  講師側でコミット & push する。これは学習コマンドではなく記録作業なので、
+  「コマンドは生徒が打つ」ルールの対象外。生徒に確認を取らず毎章末に実行してよい。
 
 ## 環境
 ```bash
