@@ -1,11 +1,19 @@
 name: study-check
 
-# 毎日 10:00 JST に「前日に学習したか」を Slack へ通知する。
-# GitHub Actions の cron は UTC 指定なので 01:00 UTC = 10:00 JST。
-# （GitHub 側の負荷により数分〜数十分遅れて起動することがある）
+# 毎日 10:00 JST ごろに「前日に学習したか」を Slack へ通知する。
+#
+# cron は UTC 指定。schedule イベントはベストエフォートで、混雑時は遅れて起動する。
+# 特に「毎時 00 分」は全ユーザーの予約が集中する時間帯で、実測でも 0 1 * * *
+# (= 10:00 JST) が毎日 4〜5 時間遅れ、14:30 JST 前後に起動していた。
+# そのため 00 分を避けた半端な分に置き、予定時刻より少し前から狙う。
+#   43 0 * * * = 09:43 JST
+#
+# 起動時刻そのものは GitHub 任せで保証できないので、判定期間は
+# notify_study_status.sh 側で NOTIFY_HOUR_JST から逆算している。
+# どれだけ遅れても通知内容は「前日 10:00 〜 当日 09:59」で一定になる。
 on:
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '43 0 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -30,4 +38,6 @@ jobs:
           SLACK_USERNAME: ${{ vars.SLACK_USERNAME }}
           SLACK_ICON_EMOJI: ${{ vars.SLACK_ICON_EMOJI }}
           DRY_RUN: ${{ inputs.dry_run }}
+          # 判定期間の基準。上の cron と揃えること
+          NOTIFY_HOUR_JST: '10'
         run: ./scripts/notify_study_status.sh
